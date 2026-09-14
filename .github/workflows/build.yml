@@ -1,7 +1,12 @@
-name: Compilar APK
+name: Compilar APK y Web
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -21,16 +26,31 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Crear estructura de Android
+      - name: Crear plataformas
         run: |
-          flutter create --platforms=android .
+          flutter create --platforms=android,web .
           flutter pub get
 
       - name: Compilar APK
         run: flutter build apk --release
+
+      - name: Compilar Web (PWA)
+        run: flutter build web --base-href "/${{ github.event.repository.name }}/" --release
 
       - name: Subir APK generado
         uses: actions/upload-artifact@v4
         with:
           name: Calculadora-IGV-Release
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Subir pagina web a Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy-web:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publicar en GitHub Pages
+        uses: actions/deploy-pages@v4
