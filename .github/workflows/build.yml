@@ -1,7 +1,7 @@
 name: Compilar APK
 
 on:
-  workflow_dispatch: # Permite iniciar la compilación manualmente con un clic
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,8 +21,10 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Instalar dependencias
-        run: flutter pub get
+      - name: Crear estructura de Android
+        run: |
+          flutter create --platforms=android .
+          flutter pub get
 
       - name: Compilar APK
         run: flutter build apk --release
